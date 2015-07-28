@@ -11,14 +11,15 @@ Will automatically create and manage snapshots based on the following custom zfs
 	- autosnap_hourly  
 
 If set to 1, then snapshots will be created, e.g.:  
+````
 NAME                PROPERTY              VALUE                  SOURCE  
-[...  
+[...]  
 bootpool/testzfs    svm:autosnap_monthly  1                      local  
 bootpool/testzfs    svm:autosnap_weekly   1                      local  
 bootpool/testzfs    svm:autosnap_yearly   1                      local  
 bootpool/testzfs    svm:autosnap_hourly   1                      local  
 bootpool/testzfs    svm:autosnap_daily    1                      local  
-
+````
 
 ###Example crontab entries:  
 ````
