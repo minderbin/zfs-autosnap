@@ -9,7 +9,7 @@ getopt('t', \%opts);
 die ("\n\tUsage $0 -t {hourly|daily|weekly|monthly|yearly}\n\n") if (! grep {$opts{'t'}=~$_} qr/hourly/, qr/daily/, qr/weekly/, qr/monthly/, qr/yearly/ ); 
 read_configuration($CONFFILE);
 my $type=$opts{'t'};
-open (ZFSLIST,"zfs list -Ht filesystem -o name,svm:autosnap_$type |") || die $!;
+open (ZFSLIST,"zfs list -Ht filesystem -o name,autosnap_$type |") || die $!;
 while (<ZFSLIST>) {
 	chomp;
 	my ($name,$snap_property)=split;
