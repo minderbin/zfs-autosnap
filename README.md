@@ -20,7 +20,7 @@ bootpool/testzfs    svm:autosnap_hourly   1                      local
 bootpool/testzfs    svm:autosnap_daily    1                      local  
 
 
-#Example crontab entries:  
+###Example crontab entries:  
 ````
 0 0 1 1 * /usr/local/bin/zfs_autosnap -t yearly  
 0 0 1 * * /usr/local/bin/zfs_autosnap -t monthly  
