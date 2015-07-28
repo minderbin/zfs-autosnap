@@ -1,0 +1,44 @@
+#!/usr/bin/perl
+use strict;
+use Getopt::Std;
+use Cwd 'abs_path';
+my $CONFFILE='zfs_autosnap.conf';
+my %ret;
+my %opts;
+getopt('t', \%opts);
+die ("\n\tUsage $0 -t {hourly|daily|weekly|monthly|yearly}\n\n") if (! grep {$opts{'t'}=~$_} qr/hourly/, qr/daily/, qr/weekly/, qr/monthly/, qr/yearly/ ); 
+read_configuration($CONFFILE);
+my $type=$opts{'t'};
+open (ZFSLIST,"zfs list -Ht filesystem -o name,svm:autosnap_$type |") || die $!;
+while (<ZFSLIST>) {
+	chomp;
+	my ($name,$snap_property)=split;
+	if ($snap_property) {
+		chomp(my $existing_snaps=`zfs list -Ht snapshot | egrep "^$name@" | grep "Autosnap_$type" | wc -l | sed -e 's/^ *//g'`);
+		if ($existing_snaps >= $ret{$type}) {
+			open (SNAPSTODEL, "zfs list -Ht snapshot -o name | egrep \"^$name@\" | grep \"Autosnap_$type\" | sort -r | tail -".int(($existing_snaps-$ret{$type})+1)." 2>&1 |");
+			while (<SNAPSTODEL>) {
+				chomp;
+				system("zfs destroy $_");
+			}
+			close SNAPSTODEL;
+		}
+		if ($ret{$type} > 0) {
+			my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
+			system("zfs snapshot $name@" . sprintf("Autosnap_%s_%d%02d%02d-%02d:%02d:%02d\n",$type,($year+1900),($mon+1),$mday,$hour,$min,$sec));
+		}
+	}
+}
+close ZFSLIST;
+
+sub read_configuration {
+        my $config_file=shift;
+        open(CONFFILE,$config_file) || die "Unable to open configuration file: $!";
+        while (<CONFFILE>) {
+                chomp;
+                next if (/^\s*\#/ || /^\s*$/);
+		if (/^\s*RETENTION=(.*)$/) {
+			($ret{'hourly'},$ret{'daily'},$ret{'weekly'},$ret{'monthly'},$ret{'yearly'})=split(/:/,$1);
+		}
+        }
+}
